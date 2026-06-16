@@ -163,6 +163,10 @@ class TernaryCPU:
     def _resolve_address(self, reg_index: int) -> int:
         return balanced_ternary_to_int(tuple(self._get_reg(f"R{reg_index}")))
 
+    def reg_value_to_int(self, name: str) -> int:
+        """Get integer value of a register by name."""
+        return balanced_ternary_to_int(tuple(self._get_reg(name)))
+
     def load_program(self, program: list[int]) -> None:
         self.program = list(program)
         self.pc = 0

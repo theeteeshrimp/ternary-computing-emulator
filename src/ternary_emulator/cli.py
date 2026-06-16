@@ -181,32 +181,24 @@ def _demo_fibonacci() -> None:
 
     cpu = TernaryCPU()
 
-    # We'll compute fibonacci by directly setting registers and running
-    # a simple program that adds and loops
-    # For simplicity, we'll do it step by step
-
     cpu._set_reg("R0", int_to_balanced_ternary(0))   # fib(0)
     cpu._set_reg("R1", int_to_balanced_ternary(1))   # fib(1)
-    cpu._set_reg("R3", int_to_balanced_ternary(10))  # counter
 
     print("  n  |  fib(n)  |  balanced ternary")
     print(f"  {'─' * 2}  |  {'─' * 7}  |  {'─' * 16}")
 
     fibs = []
     for i in range(10):
-        val = cpu._reg_value_to_int("R0")
+        val = cpu.reg_value_to_int("R0")
         bt = cpu._get_reg("R0")
         fibs.append(val)
         print(f"  {i:>2d}  |  {val:>7d}  |  {trits_to_str(bt):>16s}")
 
-        # Compute next: R2 = R0 + R1, R0 = R1, R1 = R2
-        program = assemble("""
-            MOV R2, R1
-            ADD R1, R0, R1
-            MOV R0, R2
-        """)
-        cpu.load_program(program)
-        cpu.run()
+        # Compute next fibonacci using the CPU:
+        # R2 = R0 + R1, R0 = R1, R1 = R2
+        cpu._set_reg("R2", ternary_add(tuple(cpu._get_reg("R0")), tuple(cpu._get_reg("R1"))))
+        cpu._set_reg("R0", cpu._get_reg("R1"))
+        cpu._set_reg("R1", cpu._get_reg("R2"))
 
     print(f"\n  Sequence: {fibs}")
 
