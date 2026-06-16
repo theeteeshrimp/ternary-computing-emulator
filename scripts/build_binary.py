@@ -3,9 +3,9 @@
 Build script for cross-platform standalone binaries.
 
 Usage:
-    python scripts/build_binary.py [platform]
+    python scripts/build_binary.py
 
-Platforms: windows, macos, linux, all (default: current platform)
+Requires: pip install pyinstaller
 """
 
 import os
@@ -20,7 +20,7 @@ def get_platform():
     system = platform.system().lower()
     if system == "darwin":
         return "macos"
-    return system  # "windows" or "linux"
+    return system
 
 
 def build_for_current():
@@ -38,6 +38,8 @@ def build_for_current():
     if build_dir.exists():
         shutil.rmtree(build_dir)
 
+    entry = str(src_dir / "src" / "ternary_emulator" / "cli.py")
+
     cmd = [
         sys.executable, "-m", "PyInstaller",
         "--onefile",
@@ -45,14 +47,9 @@ def build_for_current():
         "--distpath", str(dist_dir),
         "--workpath", str(build_dir),
         "--specpath", str(build_dir),
-        # Entry point
-        "-c", "ternary_emulator.cli:main",
         "--console",
+        entry,
     ]
-
-    # Add paths
-    src_path = str(src_dir / "src")
-    cmd.extend(["--paths", src_path])
 
     print(f"Running: {' '.join(cmd)}")
     result = subprocess.run(cmd, cwd=str(src_dir), capture_output=False)
@@ -71,16 +68,5 @@ def build_for_current():
         sys.exit(1)
 
 
-def main():
-    if len(sys.argv) > 1 and sys.argv[1] != "all":
-        target = sys.argv[1].lower()
-        current = get_platform()
-        if target != current:
-            print(f"WARNING: Building for {target} on {current} may not work.")
-            print("Use 'all' or run on the target platform.")
-            sys.exit(1)
-    build_for_current()
-
-
 if __name__ == "__main__":
-    main()
+    build_for_current()
